@@ -145,17 +145,6 @@ table{width:100%;border-collapse:collapse} td{font-size:9px;padding:2px 4px} .to
 <button class="btn btn-ghost" style="width:100%;margin-top:10px;font-size:11px" onclick="clearExcel()">🗑️ Borrar Excel</button><div class="stats"><div class="stat"><b id="s_excel">0</b><span>Registros</span></div><div class="stat"><b id="s_prod">0</b><span>Agregados</span></div></div>
 </div></div>
 
-<!-- EVIDENCIAS -->
-<div class="card" style="border:2px solid #f59e0b" id="evidenceCard"><div class="card-header open" id="h_c4" onclick="toggleCard('c4')"><div class="card-title">📸 Evidencias <span class="badge-header badge-orange" id="badgeEvid">0 FOTOS</span></div><div class="arrow open" id="a_c4">▼</div></div><div class="card-body open" id="c4">
-<div style="font-size:11px;color:var(--text-muted);margin-bottom:8px">Arrastra fotos aquí, toma foto o carga galería.</div>
-<div id="dropZonePhoto" style="border:2px dashed var(--input-border);border-radius:12px;padding:14px;text-align:center;background:var(--stats-bg);margin-bottom:10px;cursor:pointer"><div style="font-size:20px">📸📂</div><div style="font-size:11px;font-weight:700;margin-top:2px">Arrastra fotos aquí o click</div><div style="font-size:9px;color:var(--text-muted)">JPG, PNG</div></div>
-<div class="evidence-actions"><button class="btn btn-ghost" style="background:#f59e0b;color:#fff;border:0" onclick="startCamera()">📷 Cámara</button><button class="btn btn-primary" onclick="document.getElementById('photoInput').click()">🖼️ Galería</button></div>
-<input type="file" id="photoInput" accept="image/*" multiple style="display:none" onchange="handlePhotos(event)"><input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none" onchange="handlePhotos(event)">
-<div class="camera-area" id="cameraArea"><video id="video" autoplay playsinline></video><div class="camera-controls"><button class="btn btn-primary" onclick="takePhoto()">📸 Capturar</button><button class="btn btn-ghost" onclick="stopCamera()">✕ Cerrar</button></div><canvas id="canvas" style="display:none"></canvas></div>
-<div id="evidenceList" style="margin-top:10px"><div style="text-align:center;padding:20px;color:var(--text-muted)"><div style="font-size:22px">📸</div><div style="font-size:11px;margin-top:4px;font-weight:600">Sin evidencias</div></div></div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px"><button class="btn btn-ghost" style="font-size:10px" onclick="clearEvidence()">🗑️ Borrar</button><div style="font-size:9px;color:var(--text-muted);text-align:center;padding:6px;background:var(--stats-bg);border-radius:8px"><span id="evidenceCount">0</span> fotos</div></div>
-</div></div>
-
 <!-- TRANSPORTE -->
 <div class="card"><div class="card-header" id="h_c3" onclick="toggleCard('c3')"><div class="card-title">🚚 Transporte</div><div class="arrow" id="a_c3">▼</div></div><div class="card-body" id="c3"><label class="lab">Guía</label><input id="f_guia" class="inp" oninput="save()"><label class="lab">Placa</label><input id="f_placa" class="inp" oninput="save()"><label class="lab">Transportista</label><input id="f_trans" class="inp" oninput="save()"><label class="lab">Acción Tomada</label><input id="f_accion" class="inp" oninput="save()"><label class="lab">Transp Nombre / DNI</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input id="f_tra_nom" class="inp" oninput="save()"><input id="f_tra_dni" class="inp" oninput="save()"></div><label class="lab">AVP Nombre / DNI</label><div style="display:grid;grid-template-columns:1fr 1fr;gap:6px"><input id="f_avp_nom" class="inp" oninput="save()"><input id="f_avp_dni" class="inp" oninput="save()"></div></div></div>
 </div>
@@ -176,7 +165,7 @@ table{width:100%;border-collapse:collapse} td{font-size:9px;padding:2px 4px} .to
 </div>
 
 <div class="fab-menu" id="fabMenu">
-<button class="fab" onclick="toggleSidebar()" title="Abrir Menú Configuración"><span>☰</span><span class="fab-label">Abrir Menú (Responsable, Excel, Evidencias)</span></button>
+<button class="fab" onclick="toggleSidebar()" title="Abrir Menú Configuración"><span>☰</span><span class="fab-label">Abrir Menú (Responsable, Excel, Transporte)</span></button>
 </div>
 
 <div class="main-wrapper" id="mainWrapper">
@@ -264,6 +253,7 @@ function updateEvidencePrint(){
 function save(){ 
   try{ localStorage.setItem(KEY, JSON.stringify({prods, excelData, excelLoaded, headers, evidencePhotos: evidencePhotos.slice(0,15), f_resp_select:f_resp_select.value, f_resp:f_resp.value, f_cargo:f_cargo.value, f_dni:f_dni.value, f_local:f_local.value, f_tipo:f_tipo.value, f_cod:f_cod.value, f_vig:f_vig.value, f_fecha:f_fecha.value, f_guia:f_guia.value, f_placa:f_placa.value, f_trans:f_trans.value, f_accion:f_accion.value, f_tra_nom:f_tra_nom.value, f_tra_dni:f_tra_dni.value, f_avp_nom:f_avp_nom.value, f_avp_dni:f_avp_dni.value})); } catch(e){}
   updatePrint(); updateEvidencePrint();
+  if(window.empujarEstadoRemoto) empujarEstadoRemoto();
 }
 function load(){ let raw=localStorage.getItem(KEY); if(!raw){ let old=localStorage.getItem('home_pro_evidencia_final')||localStorage.getItem('home_pro_dark_pro')||localStorage.getItem('home_pro_resp_final'); if(old) raw=old; else return; } try{ let d=JSON.parse(raw); prods=d.prods||[]; excelData=d.excelData||[]; excelLoaded=d.excelLoaded||false; headers=d.headers||[]; evidencePhotos=d.evidencePhotos||[]; f_resp_select.value=d.f_resp_select||''; f_resp.value=d.f_resp||''; f_cargo.value=d.f_cargo||''; f_dni.value=d.f_dni||''; f_local.value=d.f_local||'CD QOLQAS'; f_tipo.value=d.f_tipo||''; f_cod.value=d.f_cod||''; f_vig.value=d.f_vig||''; f_fecha.value=d.f_fecha||''; f_guia.value=d.f_guia||''; f_placa.value=d.f_placa||''; f_trans.value=d.f_trans||''; f_accion.value=d.f_accion||''; f_tra_nom.value=d.f_tra_nom||''; f_tra_dni.value=d.f_tra_dni||''; f_avp_nom.value=d.f_avp_nom||''; f_avp_dni.value=d.f_avp_dni||''; if(f_resp_select.value && f_resp_select.value!=='OTROS' && responsablesDB[f_resp_select.value]){ document.getElementById('resp_preview_nombre').innerText=f_resp_select.value; document.getElementById('resp_preview_dni').innerText=responsablesDB[f_resp_select.value].dni; document.getElementById('resp_preview_cargo').innerText=responsablesDB[f_resp_select.value].cargo; } if(f_resp_select.value==='OTROS'){ f_resp.style.display='block'; } if(excelLoaded){ excelStatus.innerHTML='✅ Excel restaurado: '+excelData.length+' registros'; s_excel.innerText=excelData.length; badgeExcel.innerText=excelData.length+' REG'; } render(); renderEvidence(); }catch(e){} }
 function autoDamage(){ let l=p_origen.value; if(damageMap[l]) p_ddano.value=damageMap[l]; }
@@ -317,6 +307,7 @@ window.onbeforeprint=()=>{document.title=' ';};
         <button class="btn btn-ghost" style="justify-content:center;padding:14px" onclick="desconectarSync()">Desconectar</button>
       </div>
       <button style="width:100%;margin-top:10px;padding:10px;background:#fee2e2;color:#991b1b;border:1px solid #fecaca;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer" onclick="borrarNube()">🗑️ Borrar datos y fotos de la nube</button>
+      <button style="width:100%;margin-top:8px;padding:10px;background:#fef3c7;color:#92400e;border:1px solid #fde68a;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer" onclick="borrarLocal()">📱 Borrar datos y fotos de este dispositivo</button>
       <div id="syncStatusModalTxt" style="margin-top:12px;padding:10px;background:#f8fafc;border-radius:8px;font-size:11px;border:1px solid #e2e8f0">Desconectado</div>
     </div>
   </div>
@@ -409,6 +400,18 @@ function borrarNube(){
   });
 }
 
+function borrarLocal(){
+  if(!confirm('¿Borrar TODOS los datos y fotos guardados en ESTE dispositivo (registros, Excel cargado, evidencias)?\n\nEsto no borra lo que está en la nube. Si sigues conectado a un código de sincronización, al reconectar podrías volver a descargar los datos desde la nube.')) return;
+  prods=[]; excelData=[]; rawJson=[]; headers=[]; excelLoaded=false; evidencePhotos=[];
+  localStorage.removeItem(KEY);
+  try{ excelFile.value=''; }catch(e){}
+  try{ excelStatus.innerHTML='Ningún Excel cargado'; s_excel.innerText='0'; badgeExcel.innerText='0 REG'; }catch(e){}
+  document.getElementById('mapBox').classList.remove('open');
+  render(); renderEvidence(); save();
+  let ms=document.getElementById('syncStatusModalTxt');
+  if(ms) ms.innerHTML='📱 Datos locales borrados '+new Date().toLocaleTimeString();
+}
+
 function empujarEstadoRemoto(){
   if(!syncRef) return;
   clearTimeout(guardarRemotoTimeout);
@@ -464,13 +467,14 @@ function removeEvidence(id){ evidencePhotos=evidencePhotos.filter(p=>p.id!==id);
 function clearEvidence(){ if(confirm('¿Borrar todas las evidencias?')){ evidencePhotos=[]; renderEvidence(); save(); } }
 function renderEvidence(){
   let list=document.getElementById('evidenceList'); let preview=document.getElementById('evidencePreview'); let badge=document.getElementById('badgeEvid'); let count=document.getElementById('evidenceCount');
-  badge.innerText=evidencePhotos.length+' FOTOS'; count.innerText=evidencePhotos.length;
+  if(badge) badge.innerText=evidencePhotos.length+' FOTOS';
+  if(count) count.innerText=evidencePhotos.length;
   if(evidencePhotos.length===0){
-    list.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-muted)"><div style="font-size:22px">📸</div><div style="font-size:11px;margin-top:4px;font-weight:600">Sin evidencias</div></div>';
-    preview.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:11px">Sin fotos aún - Abre menú ☰ para cargar evidencias</div>';
+    if(list) list.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-muted)"><div style="font-size:22px">📸</div><div style="font-size:11px;margin-top:4px;font-weight:600">Sin evidencias</div></div>';
+    if(preview) preview.innerHTML='<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:11px">Sin fotos aún - Al agregar un folio se te pedirá la evidencia</div>';
   } else {
-    list.innerHTML='<div class="evidence-grid">'+evidencePhotos.map(p=>`<div class="evidence-item"><img src="${p.dataUrl}"><button class="evidence-del" onclick="removeEvidence('${p.id}')">✕</button><div class="evidence-info">${p.name}<br><span style="font-size:9px;color:var(--text-muted)">${p.folio}</span></div></div>`).join('')+'</div>';
-    preview.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+evidencePhotos.map((p,i)=>`<div style="border:1px solid var(--card-border);border-radius:8px;padding:5px;text-align:center;background:var(--stats-bg)"><img src="${p.dataUrl}" style="width:100%;height:80px;object-fit:cover;border-radius:6px"><div style="font-size:9px;font-weight:700;margin-top:3px">${i+1}. ${p.folio}</div></div>`).join('')+'</div>';
+    if(list) list.innerHTML='<div class="evidence-grid">'+evidencePhotos.map(p=>`<div class="evidence-item"><img src="${p.dataUrl}"><button class="evidence-del" onclick="removeEvidence('${p.id}')">✕</button><div class="evidence-info">${p.name}<br><span style="font-size:9px;color:var(--text-muted)">${p.folio}</span></div></div>`).join('')+'</div>';
+    if(preview) preview.innerHTML='<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">'+evidencePhotos.map((p,i)=>`<div style="border:1px solid var(--card-border);border-radius:8px;padding:5px;text-align:center;background:var(--stats-bg)"><img src="${p.dataUrl}" style="width:100%;height:80px;object-fit:cover;border-radius:6px"><div style="font-size:9px;font-weight:700;margin-top:3px">${i+1}. ${p.folio}</div></div>`).join('')+'</div>';
   }
   updateEvidencePrint();
 }
