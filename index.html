@@ -93,12 +93,12 @@ body{background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 }
 
 /* SELLO */
-.sello-stamp{position:absolute; text-align:center; cursor:move; user-select:none; -webkit-user-select:none; mix-blend-mode:multiply; -webkit-print-color-adjust:exact; print-color-adjust:exact; border-radius:6px; padding:12px 30px 14px; z-index:50; border:2.5px solid #000; box-shadow:0 0 0 1.5px #000 inset; color:#000; background:#fff}
-.sello-stamp .sello-title{font-family:'Segoe Print','Bradley Hand','Comic Sans MS',cursive; font-weight:900; font-size:19px; letter-spacing:0.5px; text-transform:uppercase; white-space:nowrap}
-.sello-stamp .sello-sub{font-family:'Segoe Print','Bradley Hand','Comic Sans MS',cursive; font-weight:700; font-size:9px; letter-spacing:2.5px; text-transform:uppercase; margin-top:2px; white-space:nowrap}
-.sello-stamp .sello-date{font-family:'Segoe Print','Bradley Hand','Comic Sans MS',cursive; font-weight:700; font-size:12.5px; margin-top:7px; white-space:nowrap}
-.sello-stamp .sello-word{font-family:'Times New Roman',Times,'Noto Serif',Georgia,serif; font-weight:900; font-size:40px; letter-spacing:-0.02em; line-height:0.85; transform:scaleX(1.15) scaleY(1.05); margin-top:6px; white-space:nowrap}
-.sello-stamp .sello-caption{font-family:Arial,sans-serif; font-weight:600; font-size:6.5px; letter-spacing:0.3px; text-transform:uppercase; line-height:1.2; margin-top:7px; width:220px; margin-left:auto; margin-right:auto}
+.sello-stamp{position:absolute; text-align:center; cursor:move; user-select:none; -webkit-user-select:none; mix-blend-mode:multiply; -webkit-print-color-adjust:exact; print-color-adjust:exact; border-radius:5px; padding:8px 22px 9px; z-index:50; border:2px solid #000; box-shadow:0 0 0 1.5px #000 inset; color:#000; background:#fff}
+.sello-stamp .sello-title{font-family:'Segoe Print','Bradley Hand','Comic Sans MS',cursive; font-weight:900; font-size:15px; letter-spacing:0.5px; text-transform:uppercase; white-space:nowrap}
+.sello-stamp .sello-sub{font-family:'Segoe Print','Bradley Hand','Comic Sans MS',cursive; font-weight:700; font-size:7px; letter-spacing:2px; text-transform:uppercase; margin-top:2px; white-space:nowrap}
+.sello-stamp .sello-date{font-family:'Segoe Print','Bradley Hand','Comic Sans MS',cursive; font-weight:700; font-size:10px; margin-top:5px; white-space:nowrap}
+.sello-stamp .sello-word{font-family:'Times New Roman',Times,'Noto Serif',Georgia,serif; font-weight:900; font-size:31px; letter-spacing:-0.02em; line-height:0.85; transform:scaleX(1.15) scaleY(1.05); margin-top:4px; white-space:nowrap}
+.sello-stamp .sello-caption{font-family:Arial,sans-serif; font-weight:600; font-size:5.5px; letter-spacing:0.3px; text-transform:uppercase; line-height:1.2; margin-top:5px; width:170px; margin-left:auto; margin-right:auto}
 .sello-btn{padding:8px 4px;border-radius:8px;font-size:9px;font-weight:800;text-transform:uppercase;border:2px solid #000;background:#fff;color:#000;cursor:pointer}
 body.print-preview-mode .print-sheet{display:block !important; position:fixed; inset:0; z-index:9999; background:#fff !important; overflow:auto; padding:60px 20px 20px}
 body.print-preview-mode .app-header,body.print-preview-mode .main-wrapper,body.print-preview-mode .sidebar,body.print-preview-mode .sidebar-overlay,body.print-preview-mode .fab-menu{display:none!important}
@@ -155,7 +155,7 @@ table{width:100%;border-collapse:collapse} td{font-size:9px;padding:2px 4px} .to
 </div>
 <div style="background:var(--card-bg);padding:8px 10px;border-radius:8px;border:1px solid var(--card-border);margin-top:8px"><div style="font-size:9px;color:var(--text-muted);font-weight:700">CARGO</div><div style="font-size:11px;font-weight:700;margin-top:2px" id="resp_preview_cargo">-</div></div>
 </div>
-<label class="lab">Cargo</label><input id="f_cargo" class="inp" oninput="save()"><label class="lab">DNI</label><input id="f_dni" class="inp" oninput="save()"><label class="lab">Local</label><input id="f_local" class="inp" value="CD QOLQAS" oninput="save()"><label class="lab">Tipo Recepción</label><input id="f_tipo" class="inp" placeholder="RECEPCION EN CD..." oninput="save()"><label class="lab">Código</label><input id="f_cod" class="inp" oninput="save()"><label class="lab">Vigente Desde</label><input id="f_vig" type="date" class="inp" onchange="save()"><label class="lab">Fecha Emisión</label><input id="f_fecha" type="date" class="inp" onchange="save()">
+<label class="lab">Cargo</label><input id="f_cargo" class="inp" oninput="save()"><label class="lab">DNI</label><input id="f_dni" class="inp" oninput="save()"><label class="lab">Local</label><input id="f_local" class="inp" value="CD QOLQAS" oninput="save()"><label class="lab">Tipo Recepción</label><input id="f_tipo" class="inp" placeholder="RECEPCION EN CD..." oninput="save()"><label class="lab">Código</label><input id="f_cod" class="inp" oninput="save()"><label class="lab">Vigente Desde</label><input id="f_vig" type="date" class="inp" onchange="save()"><label class="lab">Fecha Emisión</label><input id="f_fecha" type="date" class="inp" onchange="save(); actualizarSello()">
 </div></div>
 
 <!-- EXCEL -->
