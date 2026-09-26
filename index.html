@@ -625,6 +625,18 @@ function aplicarEstadoRemoto(d){
     setTimeout(()=>{ aplicandoRemoto=false; }, 50);
   }
 }
+// Reconexión automática: si este dispositivo ya se conectó antes con un código,
+// lo recupera y reconecta solo al abrir la app (antes había que pulsar "Conectar" cada vez).
+document.addEventListener('DOMContentLoaded', function(){
+  try{
+    var codigoGuardado = localStorage.getItem('imd_sync_code');
+    if(codigoGuardado){
+      var campo = document.getElementById('f_sync_code');
+      if(campo) campo.value = codigoGuardado;
+      conectarSync();
+    }
+  }catch(e){}
+});
 /* ===== FIN SINCRONIZACIÓN ===== */
 
 function toggleSidebar(){ if(sidebarOpen) closeSidebar(); else openSidebar(); }
