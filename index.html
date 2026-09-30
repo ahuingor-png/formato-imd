@@ -542,6 +542,7 @@ function _conectarSync(){
   document.getElementById('f_sync_code').value = codigo;
   localStorage.setItem('imd_sync_code', codigo);
   syncRef = rtdbSync.ref('imd_manual/' + codigo);
+  rfEscuchar(codigo);
   document.getElementById('syncStatus').innerHTML = '🟡 Conectando…';
   syncRef.on('value', snap => {
     const badge=document.getElementById('badgeSync');
@@ -549,6 +550,7 @@ function _conectarSync(){
     document.getElementById('syncStatus').innerHTML = '🟢 Conectado a "'+codigo+'" · última actualización: '+new Date().toLocaleTimeString();
     const d = snap.val();
     if(d){ aplicarEstadoRemoto(d); }
+    rfReconciliar(d||{});
   }, err => {
     document.getElementById('syncStatus').innerHTML = '🔴 Error de conexión: '+err.message;
   });
@@ -556,6 +558,7 @@ function _conectarSync(){
 
 function desconectarSync(){
   if(syncRef){ syncRef.off(); syncRef=null; }
+  rfDetener();
   syncCode='';
   const badge=document.getElementById('badgeSync'); if(badge) badge.innerText='DESCONECTADO';
   document.getElementById('syncStatus').innerHTML='Sin conectar';
@@ -629,7 +632,7 @@ function aplicarEstadoRemoto(d){
 // lo recupera y reconecta solo al abrir la app (antes había que pulsar "Conectar" cada vez).
 document.addEventListener('DOMContentLoaded', function(){
   try{
-    var codigoGuardado = localStorage.getItem('imd_sync_code');
+    var codigoGuardado = localStorage.getItem('imd_sync_code') || 'QOLQAS-1';
     if(codigoGuardado){
       var campo = document.getElementById('f_sync_code');
       if(campo) campo.value = codigoGuardado;
@@ -637,6 +640,37 @@ document.addEventListener('DOMContentLoaded', function(){
     }
   }catch(e){}
 });
+
+/* ===== RECEPTOR RF: recibe producto + foto + daño enviados desde rf.html ===== */
+// Se guarda en imd_manual/<CODIGO>_RF (mismo árbol que ya usa la sincronización, así las reglas de Firebase lo permiten)
+let rfRef=null, rfPend={};
+function rfDetener(){ if(rfRef){ rfRef.off(); rfRef=null; } rfPend={}; }
+function rfEscuchar(codigo){
+  rfDetener();
+  rfRef = rtdbSync.ref('imd_manual/' + codigo + '_RF/items');
+  rfRef.on('child_added', s=>{ rfPend[s.key]=s.val(); rfReconciliar(null); }, err=>{
+    var st=document.getElementById('syncStatus'); if(st) st.innerHTML='🔴 RF sin permiso: '+err.message;
+  });
+}
+function rfReconciliar(d){
+  if(!rfRef) return;
+  if(d){
+    const ids=new Set(Object.values(d.prods||{}).map(p=>p&&p.rfId));
+    Object.keys(rfPend).forEach(k=>{ if(ids.has(k)){ rfRef.child(k).remove(); delete rfPend[k]; } });
+  }
+  let nuevos=0;
+  Object.keys(rfPend).forEach(k=>{
+    if(prods.some(p=>p.rfId===k)) return;
+    const v=rfPend[k]||{};
+    prods.push({folio:v.folio||'',cant:v.cant||'1',sku:v.sku||'',desc:v.desc||'',origen:v.origen||'',ddano:v.ddano||'',ubic:v.ubic||'',rfId:k});
+    if(v.dataUrl && !evidencePhotos.some(p=>p.id===k)){
+      evidencePhotos.push({id:k,dataUrl:v.dataUrl,name:v.name||('Evidencia_'+(v.folio||'')+'.jpg'),folio:v.folio||'',sku:v.sku||'',desc:v.desc||'',ddano:v.ddano||'',origen:v.origen||'',ubic:v.ubic||'',cant:v.cant||'1',date:v.date||new Date().toLocaleString()});
+    }
+    nuevos++;
+  });
+  if(nuevos){ render(); renderEvidence(); save();
+    var st=document.getElementById('syncStatus'); if(st) st.innerHTML='📲 '+nuevos+' producto(s) recibido(s) del RF '+new Date().toLocaleTimeString(); }
+}
 /* ===== FIN SINCRONIZACIÓN ===== */
 
 function toggleSidebar(){ if(sidebarOpen) closeSidebar(); else openSidebar(); }
