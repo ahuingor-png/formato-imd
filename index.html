@@ -156,7 +156,7 @@ table{width:100%;border-collapse:collapse} td{font-size:9px;padding:2px 4px} .to
 </div>
 <div style="background:var(--card-bg);padding:8px 10px;border-radius:8px;border:1px solid var(--card-border);margin-top:8px"><div style="font-size:9px;color:var(--text-muted);font-weight:700">CARGO</div><div style="font-size:11px;font-weight:700;margin-top:2px" id="resp_preview_cargo">-</div></div>
 </div>
-<label class="lab">Cargo</label><input id="f_cargo" class="inp" oninput="save()"><label class="lab">DNI</label><input id="f_dni" class="inp" oninput="save()"><label class="lab">Local</label><input id="f_local" class="inp" value="CD QOLQAS" oninput="save()"><label class="lab">Tipo Recepción</label><input id="f_tipo" class="inp" placeholder="RECEPCION EN CD..." oninput="save()"><label class="lab">Código</label><input id="f_cod" class="inp" oninput="save()"><label class="lab">Vigente Desde</label><input id="f_vig" type="date" class="inp" onchange="save()"><label class="lab">Fecha Emisión</label><input id="f_fecha" type="date" class="inp" onchange="save(); actualizarSello()">
+<label class="lab">Cargo</label><input id="f_cargo" class="inp" oninput="save()"><label class="lab">DNI</label><input id="f_dni" class="inp" oninput="save()"><label class="lab">Local</label><input id="f_local" class="inp" value="CD QOLQAS" oninput="save()"><label class="lab">Tipo Recepción</label><input id="f_tipo" class="inp" placeholder="RECEPCION EN CD..." oninput="save()"><label class="lab">Código</label><input id="f_cod" class="inp" oninput="save()"><label class="lab">Vigente Desde</label><input id="f_vig" type="date" class="inp" onchange="save()"><label class="lab">Fecha Emisión</label><input id="f_fecha" type="date" class="inp" onchange="fechaManual=true; save(); actualizarSello()">
 </div></div>
 
 <!-- EXCEL -->
@@ -249,6 +249,27 @@ const damageMap={'A':'Empaque dañando','B':'Producto incompleto','C':'Deterioro
 const responsablesDB = {"ABEL HUINGO RIMACHI": { dni: "47152325", cargo: "OPERADOR LOGISTICO" },"JHOSMAR ANTONIO AGUILAR VEGA": { dni: "72851845", cargo: "ASISTENTE DE LOGISTICA INVERSA" },"PEDRO ENRRIQUE ARIAS FASABI": { dni: "75325661", cargo: "SUPERVISOR DE OPERACIONES" },"RENZO ZEVALLOS PEREZ": { dni: "72902327", cargo: "OPERADOR LOGISTICO" },"NAZARETH KATIUSKA ORTIZ DE ORUE FLORES": { dni: "77535238", cargo: "OPERADOR LOGISTICO" },"EDUARDO CORONEL TULLUSME": { dni: "71542080", cargo: "OPERADOR LOGISTICO" },"AMBERLY YAMILE CALDERON RODRIGUEZ": { dni: "77926685", cargo: "OPERADOR LOGISTICO" }};
 const KEY='home_pro_sidebar_final';
 let stream=null;
+
+// ===================== FECHA AUTOMÁTICA =====================
+// La fecha debe ser la de HOY (hora local) salvo que el usuario la cambie a mano en esta sesión.
+let fechaManual = false;
+function hoyLocal() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function fechaAHoy() {
+    if (fechaManual) return;
+    f_fecha.value = hoyLocal();
+}
+// Si la pestaña/app queda abierta de un día para otro, se refresca al volver a verla
+document.addEventListener('visibilitychange', function () {
+    if (!document.hidden && !fechaManual && f_fecha.value !== hoyLocal()) {
+        fechaAHoy();
+        updatePrint();
+        save();
+    }
+});
+// =================== FIN FECHA AUTOMÁTICA ====================
 
 // ===================== SELLO DIGITAL =====================
 const ESTADOS_SELLO = {
@@ -413,7 +434,7 @@ function save(){
   updatePrint(); updateEvidencePrint();
   if(window.empujarEstadoRemoto) empujarEstadoRemoto();
 }
-function load(){ let raw=localStorage.getItem(KEY); if(!raw){ let old=localStorage.getItem('home_pro_evidencia_final')||localStorage.getItem('home_pro_dark_pro')||localStorage.getItem('home_pro_resp_final'); if(old) raw=old; else return; } try{ let d=JSON.parse(raw); prods=d.prods||[]; excelData=d.excelData||[]; excelLoaded=d.excelLoaded||false; headers=d.headers||[]; evidencePhotos=d.evidencePhotos||[]; f_resp_select.value=d.f_resp_select||''; f_resp.value=d.f_resp||''; f_cargo.value=d.f_cargo||''; f_dni.value=d.f_dni||''; f_local.value=d.f_local||'CD QOLQAS'; f_tipo.value=d.f_tipo||''; f_cod.value=d.f_cod||''; f_vig.value=d.f_vig||''; f_fecha.value=d.f_fecha||''; f_guia.value=d.f_guia||''; f_placa.value=d.f_placa||''; f_trans.value=d.f_trans||''; f_accion.value=d.f_accion||''; f_tra_nom.value=d.f_tra_nom||''; f_tra_dni.value=d.f_tra_dni||''; f_avp_nom.value=d.f_avp_nom||''; f_avp_dni.value=d.f_avp_dni||''; if(f_resp_select.value && f_resp_select.value!=='OTROS' && responsablesDB[f_resp_select.value]){ document.getElementById('resp_preview_nombre').innerText=f_resp_select.value; document.getElementById('resp_preview_dni').innerText=responsablesDB[f_resp_select.value].dni; document.getElementById('resp_preview_cargo').innerText=responsablesDB[f_resp_select.value].cargo; } if(f_resp_select.value==='OTROS'){ f_resp.style.display='block'; } if(excelLoaded){ excelStatus.innerHTML='✅ Excel restaurado: '+excelData.length+' registros'; s_excel.innerText=excelData.length; badgeExcel.innerText=excelData.length+' REG'; } render(); renderEvidence(); }catch(e){} }
+function load(){ let raw=localStorage.getItem(KEY); if(!raw){ let old=localStorage.getItem('home_pro_evidencia_final')||localStorage.getItem('home_pro_dark_pro')||localStorage.getItem('home_pro_resp_final'); if(old) raw=old; else return; } try{ let d=JSON.parse(raw); prods=d.prods||[]; excelData=d.excelData||[]; excelLoaded=d.excelLoaded||false; headers=d.headers||[]; evidencePhotos=d.evidencePhotos||[]; f_resp_select.value=d.f_resp_select||''; f_resp.value=d.f_resp||''; f_cargo.value=d.f_cargo||''; f_dni.value=d.f_dni||''; f_local.value=d.f_local||'CD QOLQAS'; f_tipo.value=d.f_tipo||''; f_cod.value=d.f_cod||''; f_vig.value=d.f_vig||''; f_fecha.value=d.f_fecha||''; fechaAHoy(); f_guia.value=d.f_guia||''; f_placa.value=d.f_placa||''; f_trans.value=d.f_trans||''; f_accion.value=d.f_accion||''; f_tra_nom.value=d.f_tra_nom||''; f_tra_dni.value=d.f_tra_dni||''; f_avp_nom.value=d.f_avp_nom||''; f_avp_dni.value=d.f_avp_dni||''; if(f_resp_select.value && f_resp_select.value!=='OTROS' && responsablesDB[f_resp_select.value]){ document.getElementById('resp_preview_nombre').innerText=f_resp_select.value; document.getElementById('resp_preview_dni').innerText=responsablesDB[f_resp_select.value].dni; document.getElementById('resp_preview_cargo').innerText=responsablesDB[f_resp_select.value].cargo; } if(f_resp_select.value==='OTROS'){ f_resp.style.display='block'; } if(excelLoaded){ excelStatus.innerHTML='✅ Excel restaurado: '+excelData.length+' registros'; s_excel.innerText=excelData.length; badgeExcel.innerText=excelData.length+' REG'; } render(); renderEvidence(); }catch(e){} }
 function autoDamage(){ let l=p_origen.value; if(damageMap[l]) p_ddano.value=damageMap[l]; }
 function autoFill(){ if(!excelLoaded) return; let folio=p_folio.value.trim().toLowerCase(); if(!folio) return; let found=excelData.find(it=>it.folio.toLowerCase()===folio || it.folio.toLowerCase().includes(folio) || folio.includes(it.folio.toLowerCase())); if(found){ p_sku.value=found.sku; p_desc.value=found.desc; } }
 function loadExcel(e){ let file=e.target.files[0]; if(!file) return; let reader=new FileReader(); reader.onload=function(ev){ try{ let data=new Uint8Array(ev.target.result); let wb=XLSX.read(data,{type:'array'}); let sheet=wb.Sheets[wb.SheetNames[0]]; rawJson = XLSX.utils.sheet_to_json(sheet,{header:1}); headers = rawJson[0]||[]; let folioIdx=-1, skuIdx=-1, descIdx=-1; for(let i=0;i<headers.length;i++){ let h=(headers[i]||'').toString().toUpperCase().trim().replace(/\s+/g,'_'); let hOrig=(headers[i]||'').toString().toUpperCase().trim(); if(h.includes('FOLIO')||h.includes('RASTREO')) folioIdx=i; if(h.includes('SKU')) skuIdx=i; if(h.includes('NOMBRE_PRODUCTO')||hOrig==='NOMBRE_PRODUCTO'||(h.includes('NOMBRE')&&h.includes('PRODUCTO'))) descIdx=i; } if(descIdx===-1 || skuIdx===-1 || folioIdx===-1){ document.getElementById('mapBox').classList.add('open'); let opts=headers.map((h,i)=>`<option value="${i}">${i+1} - ${h||'(vacía)'} (Col ${String.fromCharCode(65+i)})</option>`).join(''); let emptyOpt='<option value="-1">-- No usar --</option>'; document.getElementById('mapFolio').innerHTML=emptyOpt+opts; document.getElementById('mapSku').innerHTML=emptyOpt+opts; document.getElementById('mapDesc').innerHTML=emptyOpt+opts; document.getElementById('headersList').innerHTML='<b>Columnas:</b><br>'+headers.map((h,i)=>`${i+1} (${String.fromCharCode(65+i)}): ${h||'vacía'}`).join(' | '); if(folioIdx>=0) document.getElementById('mapFolio').value=folioIdx; if(skuIdx>=0) document.getElementById('mapSku').value=skuIdx; if(descIdx>=0) document.getElementById('mapDesc').value=descIdx; } if(folioIdx>=0 && skuIdx>=0 && descIdx>=0){ applyMappingWithIdx(folioIdx, skuIdx, descIdx); } else { excelStatus.innerHTML='⚠️ Excel cargado - Selecciona columnas abajo ('+headers.length+' cols)'; } }catch(err){ excelStatus.innerHTML='❌ Error: '+err.message; } }; reader.readAsArrayBuffer(file); }
@@ -446,7 +467,7 @@ setTimeout(()=>{
   let dzp=document.getElementById('dropZonePhoto'); if(dzp){ dzp.addEventListener('click', ()=>document.getElementById('photoInput').click()); dzp.addEventListener('dragover', e=>{e.preventDefault(); dzp.style.borderColor='#f59e0b'; dzp.style.background='#fffbeb';}); dzp.addEventListener('dragleave', e=>{dzp.style.borderColor='var(--input-border)'; dzp.style.background='var(--stats-bg)';}); dzp.addEventListener('drop', e=>{ e.preventDefault(); dzp.style.borderColor='var(--input-border)'; dzp.style.background='var(--stats-bg)'; let files=e.dataTransfer.files; for(let i=0;i<files.length;i++){ if(files[i].type.startsWith('image/')){ let reader=new FileReader(); reader.onload=function(ev){ addEvidencePhoto(ev.target.result, files[i].name); }; reader.readAsDataURL(files[i]); } } }); }
 },600);
 
-window.addEventListener('load', ()=>{ loadTheme(); f_fecha.valueAsDate=new Date(); load(); render(); renderEvidence(); });
+window.addEventListener('load', ()=>{ loadTheme(); fechaAHoy(); load(); render(); renderEvidence(); });
 window.onbeforeprint=()=>{document.title=' ';};
 </script>
 
@@ -612,7 +633,7 @@ function aplicarEstadoRemoto(d){
   try{
     prods=d.prods||[]; excelData=d.excelData||[]; excelLoaded=d.excelLoaded||false; headers=d.headers||[]; evidencePhotos=d.evidencePhotos||[];
     f_resp_select.value=d.f_resp_select||''; f_resp.value=d.f_resp||''; f_cargo.value=d.f_cargo||''; f_dni.value=d.f_dni||'';
-    f_local.value=d.f_local||'CD QOLQAS'; f_tipo.value=d.f_tipo||''; f_cod.value=d.f_cod||''; f_vig.value=d.f_vig||''; f_fecha.value=d.f_fecha||'';
+    f_local.value=d.f_local||'CD QOLQAS'; f_tipo.value=d.f_tipo||''; f_cod.value=d.f_cod||''; f_vig.value=d.f_vig||''; f_fecha.value=d.f_fecha||''; fechaAHoy();
     f_guia.value=d.f_guia||''; f_placa.value=d.f_placa||''; f_trans.value=d.f_trans||''; f_accion.value=d.f_accion||'';
     f_tra_nom.value=d.f_tra_nom||''; f_tra_dni.value=d.f_tra_dni||''; f_avp_nom.value=d.f_avp_nom||''; f_avp_dni.value=d.f_avp_dni||'';
     if(f_resp_select.value && f_resp_select.value!=='OTROS' && responsablesDB[f_resp_select.value]){
